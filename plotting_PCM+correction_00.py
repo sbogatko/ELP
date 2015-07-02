@@ -1,8 +1,14 @@
 # coding: utf-8
+
+#import numerical python module
 import numpy as np
+#import matlab style plotting module
 import matplotlib.pyplot as plt
+#import sys module : for sys.stdin
 import sys
 
+
+# local variables
 energy_singlets = []
 energy_triplets = []
 wavelength_singlets = []
@@ -24,21 +30,15 @@ Emax_Singlets=0.0
 Emin_Triplets=0.0 
 Emax_Triplets=0.0
 
-read_in = sys.stdin
+# read input file containing plot title and filenames and for each line read parse input line and store filenames in argument[*] array and execute the big loop
+read_in = sys.stdin 
 for line in read_in:
     arguments=line.split()
-    if arguments[0]=="EOF":
+    if arguments[0]=="EOF": # poor programming: I know an use the fact that there are 6 arguments below
        print 'leaving'
        break
-    print arguments[0]
-    print arguments[1]
-    print arguments[2]
-    print arguments[3]
-    print arguments[4]
-    print arguments[5]
-    print arguments[6]
 
-# clear lists and local variables
+# clear lists and local variables, initialize variables for each iteration
     plot_abs = False
     del energy_singlets[:]
     del energy_triplets[:]
@@ -48,7 +48,8 @@ for line in read_in:
     del osc_str_triplets[:]
     del input_list[:]
     del ISC_TRIPLETS[:]
-    print 'debug: Semin, Semax ,Temin,Temax:', Emin_Singlets, Emax_Singlets, Emin_Triplets,Emax_Triplets 
+
+# assign elements of arguments to local variables
     title                 = arguments[0]
     singlets_X_filename   = arguments[1]
     triplets_X_filename   = arguments[2]
@@ -57,6 +58,7 @@ for line in read_in:
     singlet_corr_filename    = arguments[5] 
     triplet_corr_filename    = arguments[6] 
 
+# open above files with assigned handles
     file_singlets = open(singlets_X_filename,'r')
     file_triplets = open(triplets_X_filename,'r')
     file_singlets_scf = open(singlets_SCF_filename,'r')
@@ -64,6 +66,7 @@ for line in read_in:
     file_sing_shift   = open(singlet_corr_filename,'r')
     file_trip_shift   = open(triplet_corr_filename,'r')
 
+# get the number of lines
     num_lines_singlets = sum(1 for line in open(singlets_X_filename))
     num_lines_triplets = sum(1 for line in open(triplets_X_filename))
 
@@ -73,10 +76,11 @@ for line in read_in:
     triplet_scf_energy = float(file_triplets_scf.readline())
 #    trip_shift = float(file_trip_shift.readline()) 
     trip_shift = 0.0
-    print 'trip shift',trip_shift
 
+# compute the corrected lowest lying triplet energy
     t1_energy=27.211*(triplet_scf_energy - singlet_scf_energy) + float(trip_shift) # all triplet energies are based off of T1_energy and so from here all contain the correction
 
+# loop over singlets correcting singlet and triplet energies: working on singlet and triplet data! this works because there the same number of states for each. poor programming as this would fail for unequal numbers of singlet and triplet states
     for index in range(0,num_lines_singlets):
         readfile_singlets = file_singlets.readline()
         readfile_triplets = file_triplets.readline()
@@ -90,42 +94,52 @@ for line in read_in:
         osc_str_triplets.append(float(line_triplets[2].strip( 'f=' ))) 
         # OK all data should be corrected from here on out
 
-
+# get min and max energies for singlets and triplets
     Emin_Singlets = min(energy_singlets)
     Emax_Singlets = max(energy_singlets)
     Emin_Triplets = min(energy_triplets)
     Emax_Triplets = max(energy_triplets)
 
+# set global min (0) and global max energies
     emin=0.0
     emax = max(Emax_Singlets,Emax_Triplets)
 
 
+##########################################################
 # Plot Singlet Energy Levels: plot infor for lowest lying singlet state and lowest absorbint singlet (if different than lowest lying singlet)
+##########################################################
+    #set up plotting parameters - energy levels drawn as lines between x0 and x1
+    # arrays Xposition and Yposition hold values for each excited state
     x0=0
     x1=3
-    Yposition = []
-    Xposition = []
-    deltaY = 0.1
+    Yposition = [] # will hold energy values
+    Xposition = [] # look unecessary...
+    deltaY = 0.1   # threshold - plots lines within threshold
 
+    # make a figure with title
     energy_figure = plt.figure()
     energy_figure.suptitle(title)
 
+    # add axis labels
     energy_plot = energy_figure.add_subplot(111)
     energy_plot.set_ylabel('ev')
     energy_plot.axes.get_xaxis().set_visible(False)
-    
-    energy_plot.plot((x0,x1),(0.0,0.0),color='black') # plot ground singlet state at zero eV
 
+    # plot ground singlet state at zero eV
+    energy_plot.plot((x0,x1),(0.0,0.0),color='black') 
+
+    # loop over singlet states: plot lines at singlet energies
     for index in range(len(energy_singlets)): 
         energy_plot.plot((x0,x1),(energy_singlets[index],energy_singlets[index]),color='black')
-        Xposition.append(x1)
+        Xposition.append(x1) # looks unecessary
         Yposition.append(energy_singlets[index])
-     
+
+        # label the lowest excited singlet
         if index == 0:
             Lowest_Lying_Singlet = energy_singlets[index]
             energy_plot.text(x0-2.0,Yposition[index],(energy_singlets[index],wavelength_singlets[index]),fontsize=10)
 
-######label lowest lying absoRBING SINGLET############
+        #label the lowest lying absorbing singlet
         if osc_str_singlets[index]>0.0:
               if plot_abs == False:
                   energy_plot.text(x0-2.0,Yposition[index],(energy_singlets[index],wavelength_singlets[index]),fontsize=10)
@@ -134,22 +148,27 @@ for line in read_in:
                    energy_plot.annotate('IC',xy=(float((x1-x0)/2.0),Lowest_Lying_Singlet),xytext=(float((x1-x0)/2.0),Yposition[index]),arrowprops=dict(facecolor='green'), color='green',fontsize='20')
                   plot_abs=True
                   Lowest_Absorbing_Singlet = energy_singlets[index]
-                  print 'debug: Lowest absorbing singlet', Lowest_Absorbing_Singlet
-# plot triplet energy levels: plot levels that are likely involved in S-T intersystem crossing and the lowest lying triplet
+
+##########################################################
+# Plot Triplet Energy Levels: plot info for lowest lying triplet state and triplet states within threshold  
+# TODO: this should be re-written so that the lowest triplet state and the nearest triplet state are labeled
+##########################################################
+    #set up plotting parameters - energy levels drawn as lines between x0 and x1
+    # arrays Xposition and Yposition hold values for each excited state
     x2=4
     x3=7
-    Yposition = []
-    Xposition = []
+    Yposition = [] # triplet energy - same array as for singlet energies. poor programming
+    Xposition = [] # looks unecessary...
     deltay = 0.1
 
-######label lowest lying tripLET : t1_Energy############
+######label lowest lying tripLET : t1_Energy and if withing range label it as an ISC############
     energy_plot.plot((x2,x3),(t1_energy,t1_energy),color='black') 
     energy_plot.text(x3+1.0,t1_energy,(round(t1_energy,2),round(1240.0/t1_energy,2)),fontsize=10)
     print 't1_energy=',t1_energy
     if abs(t1_energy-Lowest_Lying_Singlet) <= deltaE:
        energy_plot.annotate('ISC',xy=(x2,t1_energy),xytext=(x1-float((x1-x0)/3.0),Lowest_Lying_Singlet),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
 
-######label triplets within deltaE THRESHOLD of Lowest_Lying_Singlet############
+######label triplets within deltaE THRESHOLD of Lowest_Lying_Singlet and if within range label as ISC############
     plot_text = 0.0
     plot_IC = 0.0
 
@@ -159,6 +178,7 @@ for line in read_in:
         Xposition.append(x3)
         Yposition.append(energy_triplets[index])
         print 'debug triplets, lowest singlet, deltaE, thresh',energy_triplets[index],Lowest_Lying_Singlet,energy_triplets[index]-Lowest_Lying_Singlet, deltaE
+        # we are looking at transitions to lower triplet states. no uphill transitions, no negative phonon modes ;-)
         if(energy_triplets[index]<=Lowest_Lying_Singlet):
           if abs(energy_triplets[index]-Lowest_Lying_Singlet) <= deltaE:
              if index == 0:
