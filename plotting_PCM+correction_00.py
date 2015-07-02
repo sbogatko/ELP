@@ -71,7 +71,9 @@ for line in read_in:
     singlet_scf_energy = float(file_singlets_scf.readline())
     sing_shift = float(file_sing_shift.readline()) 
     triplet_scf_energy = float(file_triplets_scf.readline())
-    trip_shift = float(file_trip_shift.readline()) 
+#    trip_shift = float(file_trip_shift.readline()) 
+    trip_shift = 0.0
+    print 'trip shift',trip_shift
 
     t1_energy=27.211*(triplet_scf_energy - singlet_scf_energy) + float(trip_shift) # all triplet energies are based off of T1_energy and so from here all contain the correction
 
@@ -157,21 +159,22 @@ for line in read_in:
         Xposition.append(x3)
         Yposition.append(energy_triplets[index])
         print 'debug triplets, lowest singlet, deltaE, thresh',energy_triplets[index],Lowest_Lying_Singlet,energy_triplets[index]-Lowest_Lying_Singlet, deltaE
-        if abs(energy_triplets[index]-Lowest_Lying_Singlet) <= deltaE:
-           if index == 0:
-                  if abs((Yposition[index] + plot_text)  - t1_energy) < deltaY:
-                         plot_text=plot_text+0.25 
-                         print 'hello from inside this weird loop',plot_text
-           else :
-                  if abs((Yposition[index] + plot_text)  - (Yposition[index - 1] + plot_text)) < deltaY:
-                         plot_text=plot_text+0.25 
-                         print 'hello from inside this weird loop',plot_text
-           print 'printing ',Yposition[index],Lowest_Lying_Singlet,deltaE,energy_triplets[index]-Lowest_Lying_Singlet
-           energy_plot.text(x3+1.0,Yposition[index] + plot_text,(energy_triplets[index],wavelength_triplets[index]),fontsize=10)
-           energy_plot.annotate('ISC',xy=(x2,Yposition[index]),xytext=(x1-float((x1-x0)/3.0),Lowest_Lying_Singlet),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
-           energy_plot.annotate('IC',xy=(plot_IC + x2 ,t1_energy),xytext=(plot_IC+ x2 ,Yposition[index]),arrowprops=dict(facecolor='green'), color='green',fontsize='20')
-           # move arrow after each IC plot
-           plot_IC = plot_IC + 0.75
+        if(energy_triplets[index]<=Lowest_Lying_Singlet):
+          if abs(energy_triplets[index]-Lowest_Lying_Singlet) <= deltaE:
+             if index == 0:
+                    if abs((Yposition[index] + plot_text)  - t1_energy) < deltaY:
+                           plot_text=plot_text+0.25 
+                           print 'hello from inside this weird loop',plot_text
+             else :
+                    if abs((Yposition[index] + plot_text)  - (Yposition[index - 1] + plot_text)) < deltaY:
+                           plot_text=plot_text+0.25 
+                           print 'hello from inside this weird loop',plot_text
+             print 'printing ',Yposition[index],Lowest_Lying_Singlet,deltaE,energy_triplets[index]-Lowest_Lying_Singlet
+             energy_plot.text(x3+1.0,Yposition[index] + plot_text,(energy_triplets[index],wavelength_triplets[index]),fontsize=10)
+             energy_plot.annotate('ISC',xy=(x2,Yposition[index]),xytext=(x1-float((x1-x0)/3.0),Lowest_Lying_Singlet),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
+             energy_plot.annotate('IC',xy=(plot_IC + x2 ,t1_energy),xytext=(plot_IC+ x2 ,Yposition[index]),arrowprops=dict(facecolor='green'), color='green',fontsize='20')
+             # move arrow after each IC plot
+             plot_IC = plot_IC + 0.75
 ######label transition back tO GROUND STATE
     energy_plot.annotate('ISC',xy=(x1,0.0),xytext=(x3+0.1,t1_energy),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
 
