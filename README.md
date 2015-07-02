@@ -1,1 +1,1 @@
-ELP - Energy Level Diagram
+ELP - Energy Level Plotter
