@@ -114,7 +114,7 @@ for line in read_in:
     x1=3
     Yposition = [] # will hold energy values
     Xposition = [] # look unecessary...
-    deltaY = 0.1   # threshold - plots lines within threshold
+    deltaY = 0.15   # threshold - plots lines within threshold
 
     # make a figure with title
     energy_figure = plt.figure()
@@ -169,6 +169,7 @@ for line in read_in:
        energy_plot.annotate('ISC',xy=(x2,t1_energy),xytext=(x1-float((x1-x0)/3.0),Lowest_Lying_Singlet),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
 
 ######label triplets within deltaE THRESHOLD of Lowest_Lying_Singlet and if within range label as ISC############
+######work in progress: label only triplets less than or equal to S1 energy############
     plot_text = 0.0
     plot_IC = 0.0
 
@@ -180,22 +181,23 @@ for line in read_in:
         print 'debug triplets, lowest singlet, deltaE, thresh',energy_triplets[index],Lowest_Lying_Singlet,energy_triplets[index]-Lowest_Lying_Singlet, deltaE
         # we are looking at transitions to lower triplet states. no uphill transitions, no negative phonon modes ;-)
         if(energy_triplets[index]<=Lowest_Lying_Singlet):
-          if abs(energy_triplets[index]-Lowest_Lying_Singlet) <= deltaE:
-             if index == 0:
-                    if abs((Yposition[index] + plot_text)  - t1_energy) < deltaY:
-                           plot_text=plot_text+0.25 
-                           print 'hello from inside this weird loop',plot_text
-             else :
-                    if abs((Yposition[index] + plot_text)  - (Yposition[index - 1] + plot_text)) < deltaY:
-                           plot_text=plot_text+0.25 
-                           print 'hello from inside this weird loop',plot_text
-             print 'printing ',Yposition[index],Lowest_Lying_Singlet,deltaE,energy_triplets[index]-Lowest_Lying_Singlet
-             energy_plot.text(x3+1.0,Yposition[index] + plot_text,(energy_triplets[index],wavelength_triplets[index]),fontsize=10)
-             energy_plot.annotate('ISC',xy=(x2,Yposition[index]),xytext=(x1-float((x1-x0)/3.0),Lowest_Lying_Singlet),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
-             energy_plot.annotate('IC',xy=(plot_IC + x2 ,t1_energy),xytext=(plot_IC+ x2 ,Yposition[index]),arrowprops=dict(facecolor='green'), color='green',fontsize='20')
-             # move arrow after each IC plot
-             plot_IC = plot_IC + 0.75
-######label transition back tO GROUND STATE
+          Tn = energy_triplets[index] # this will save the highest triplet energy for later
+          if index == 0:
+                 if abs((Yposition[index] + plot_text)  - t1_energy) < deltaY:
+                        plot_text=plot_text+deltaY
+                        print 'hello from inside this weird loop',plot_text
+          else :
+                 if abs((Yposition[index] + plot_text)  - (Yposition[index - 1] + plot_text)) < deltaY:
+                        plot_text=plot_text+deltaY
+                        print 'hello from inside this weird loop',plot_text
+          print 'printing ',Yposition[index],Lowest_Lying_Singlet,deltaE,energy_triplets[index]-Lowest_Lying_Singlet
+          energy_plot.text(x3+1.0,Yposition[index] + plot_text,(energy_triplets[index],wavelength_triplets[index]),fontsize=10)
+
+######label ISC transition to Tn
+    energy_plot.annotate('ISC',xy=(x2,Tn),xytext=(x1-float((x1-x0)/3.0),Lowest_Lying_Singlet),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
+######label IC transition to T1
+    energy_plot.annotate('IC',xy=(plot_IC + x2 ,t1_energy),xytext=(plot_IC+ x2 ,Tn),arrowprops=dict(facecolor='green'), color='green',fontsize='20')
+######label ISC transition to S0
     energy_plot.annotate('ISC',xy=(x1,0.0),xytext=(x3+0.1,t1_energy),arrowprops=dict(facecolor='orange'), color='orange',fontsize='20')
 
 #plt.axis('off')
